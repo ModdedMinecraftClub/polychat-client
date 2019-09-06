@@ -108,7 +108,8 @@ public class EventListener {
             }
         } else if (message instanceof CommandMessage) {
             String command = ((CommandMessage) message).getCommand();
-            ModClass.server.getCommandManager().executeCommand(new CommandSender(command), command);
+            String channel = ((CommandMessage) message).getChannel();
+            ModClass.server.getCommandManager().executeCommand(new CommandSender(command, channel), command);
         }
 
         if (string != null) sendTextComponent(string);

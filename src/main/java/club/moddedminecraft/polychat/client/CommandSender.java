@@ -13,15 +13,14 @@ import net.minecraft.world.World;
 
 import javax.annotation.Nullable;
 
-/**
- * @author shadowfacts
- */
 public class CommandSender implements ICommandSender {
 
-    private final String command;
+    private String command;
+    private String channel;
 
-    public CommandSender(String command) {
+    public CommandSender(String command, String channel) {
         this.command = command;
+        this.channel = channel;
     }
 
     @Override
@@ -36,8 +35,13 @@ public class CommandSender implements ICommandSender {
 
     @Override
     public void sendMessage(ITextComponent component) {
-        CommandOutputMessage message = new CommandOutputMessage(this.command, component.getUnformattedText());
+        String commandText = "";
+        if (this.command != null){
+            commandText = "/" + this.command;
+        }
+        CommandOutputMessage message = new CommandOutputMessage(commandText, component.getUnformattedText(), channel);
         ModClass.sendMessage(message);
+        this.command = null; // Only show command once
     }
 
     @Override
