@@ -112,7 +112,8 @@ public class EventListener {
         } else if (message instanceof CommandMessage) {
             String command = ((CommandMessage) message).getCommand();
             String channel = ((CommandMessage) message).getChannel();
-            CommandSender sender = new CommandSender(command, channel);
+            String serverID = ((CommandMessage) message).getServerID();
+            CommandSender sender = new CommandSender(serverID, command, channel);
             ModClass.server.getCommandManager().executeCommand(sender, command);
             // send command output to discord in .5 seconds
             new Timer().schedule(new TimerTask() {

@@ -16,11 +16,13 @@ import java.util.ArrayList;
 
 public class CommandSender implements ICommandSender {
 
-    private String command;
-    private String channel;
+    private final String serverID;
+    private final String command;
+    private final String channel;
     private ArrayList<String> output = new ArrayList<>();
 
-    public CommandSender(String command, String channel) {
+    public CommandSender(String serverID, String command, String channel) {
+        this.serverID = serverID;
         this.command = command;
         this.channel = channel;
     }
@@ -45,7 +47,7 @@ public class CommandSender implements ICommandSender {
         for (String output : this.output) {
             commandOutput.append(output).append("\n");
         }
-        CommandOutputMessage message = new CommandOutputMessage("/" + this.command, commandOutput.toString(), channel);
+        CommandOutputMessage message = new CommandOutputMessage(serverID, "/" + this.command, commandOutput.toString(), channel);
         ModClass.sendMessage(message);
     }
 
