@@ -12,11 +12,13 @@ import net.minecraft.util.text.TextComponentString;
 import net.minecraft.world.World;
 
 import javax.annotation.Nullable;
+import java.util.ArrayList;
 
 public class CommandSender implements ICommandSender {
 
     private String command;
     private String channel;
+    private ArrayList<String> output = new ArrayList<>();
 
     public CommandSender(String command, String channel) {
         this.command = command;
@@ -35,13 +37,16 @@ public class CommandSender implements ICommandSender {
 
     @Override
     public void sendMessage(ITextComponent component) {
-        String commandText = "";
-        if (this.command != null){
-            commandText = "/" + this.command;
+        this.output.add(component.getUnformattedComponentText());
+    }
+
+    public void sendOutput() {
+        StringBuilder commandOutput = new StringBuilder();
+        for (String output : this.output) {
+            commandOutput.append(output).append("\n");
         }
-        CommandOutputMessage message = new CommandOutputMessage(commandText, component.getUnformattedText(), channel);
+        CommandOutputMessage message = new CommandOutputMessage("/" + this.command, commandOutput.toString(), channel);
         ModClass.sendMessage(message);
-        this.command = null; // Only show command once
     }
 
     @Override

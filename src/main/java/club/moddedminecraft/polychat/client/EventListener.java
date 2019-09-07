@@ -29,6 +29,9 @@ import net.minecraftforge.event.ServerChatEvent;
 import net.minecraftforge.fml.common.eventhandler.SubscribeEvent;
 import net.minecraftforge.fml.common.gameevent.PlayerEvent;
 
+import java.util.Timer;
+import java.util.TimerTask;
+
 public class EventListener {
 
     //This sends a text component to the server console and all players connected
@@ -109,7 +112,15 @@ public class EventListener {
         } else if (message instanceof CommandMessage) {
             String command = ((CommandMessage) message).getCommand();
             String channel = ((CommandMessage) message).getChannel();
-            ModClass.server.getCommandManager().executeCommand(new CommandSender(command, channel), command);
+            CommandSender sender = new CommandSender(command, channel);
+            ModClass.server.getCommandManager().executeCommand(sender, command);
+            // send command output to discord in .5 seconds
+            new Timer().schedule(new TimerTask() {
+                @Override
+                public void run() {
+                    sender.sendOutput();
+                }
+            }, 500);
         }
 
         if (string != null) sendTextComponent(string);
