@@ -39,7 +39,8 @@ public class CommandSender implements ICommandSender {
 
     @Override
     public void sendMessage(ITextComponent component) {
-        this.output.add(component.getUnformattedComponentText());
+        String text = component.getFormattedText();
+        this.output.add(text.replaceAll("§.", ""));
     }
 
     public void sendOutput() {
