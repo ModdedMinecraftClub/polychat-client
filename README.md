@@ -22,7 +22,7 @@ Chat, player join/leave events, and server online/offline/crashed events are bro
 `id_color`: This is the numerical id between 0 and 15 of the color to make the server id.  Any number outside this range will be discarded and white used as a default.
 
 
-#### Color IDs:
+### Color IDs:
 | Color        	| ID 	|
 |--------------	|----	|
 | BLACK        	| 0  	|
