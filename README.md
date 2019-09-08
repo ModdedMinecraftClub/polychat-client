@@ -2,7 +2,7 @@
 
 This is built using "gradlew build" and uses the recommended Forge build 14.23.5.2768 for MC 1.12.2.
 
-PolyChat Client is a mod that is placed in an MC server and connects to a running instance of Server using NetworkLibrary from <https://github.com/john01dav/polychat>.
+PolyChat Client is a mod that is placed in an MC server and connects to a running instance of Server using NetworkLibrary from <https://github.com/ModdedMinecraftClub/polychat>.
 To compile this project, place NetworkLibrary.jar in a folder named "libs" at the top level of this project directory.
 
 NetworkLibrary.jar will also need to be placed in the mods folder of the desired MC server, so it is loaded for this mod to use.
