@@ -75,7 +75,7 @@ public class ReattachThread extends HeartbeatThread {
     //Sends a list of all online players silently for auto reconnect
     public void sendOnlinePlayers() {
         ArrayList<String> playerList = new ArrayList<>();
-        Collections.addAll(playerList, ModClass.server.getOnlinePlayerNames());
+        Collections.addAll(playerList, ModClass.server.getPlayerList().getAllUsernames());
         PlayerListMessage message = new PlayerListMessage(ModClass.properties.getProperty("server_id"), playerList);
         ModClass.sendMessage(message);
     }

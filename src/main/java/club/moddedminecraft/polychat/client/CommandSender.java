@@ -38,7 +38,7 @@ public class CommandSender implements ICommandSender {
     }
 
     @Override
-    public void sendMessage(ITextComponent component) {
+    public void addChatMessage(ITextComponent component) {
         String text = component.getFormattedText();
         this.output.add(text.replaceAll("§.", ""));
     }
@@ -53,7 +53,12 @@ public class CommandSender implements ICommandSender {
     }
 
     @Override
-    public boolean canUseCommand(int permLevel, String commandName) {
+    public boolean sendCommandFeedback(){
+        return true;
+    }
+
+    @Override
+    public boolean canCommandSenderUseCommand(int permLevel, String commandName) {
         return true;
     }
 
@@ -69,7 +74,7 @@ public class CommandSender implements ICommandSender {
 
     @Override
     public World getEntityWorld() {
-        return ModClass.server.getWorld(0);
+        return ModClass.server.getEntityWorld();
     }
 
     @Nullable
@@ -87,5 +92,7 @@ public class CommandSender implements ICommandSender {
     public MinecraftServer getServer() {
         return ModClass.server;
     }
+
+
 
 }

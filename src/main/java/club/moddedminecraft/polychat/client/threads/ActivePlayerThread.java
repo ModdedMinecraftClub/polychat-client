@@ -24,7 +24,7 @@ public class ActivePlayerThread extends HeartbeatThread {
 
     private ArrayList<String> getPlayers() {
         ArrayList<String> playerList = new ArrayList<>();
-        Collections.addAll(playerList, ModClass.server.getOnlinePlayerNames());
+        Collections.addAll(playerList, ModClass.server.getPlayerList().getAllUsernames());
         return playerList;
     }
 

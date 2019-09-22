@@ -20,6 +20,7 @@
 package club.moddedminecraft.polychat.client;
 
 import club.moddedminecraft.polychat.networking.io.*;
+import net.minecraft.entity.player.EntityPlayerMP;
 import net.minecraft.server.management.PlayerList;
 import net.minecraft.util.text.ITextComponent;
 import net.minecraft.util.text.TextComponentString;
@@ -36,13 +37,13 @@ public class EventListener {
 
     //This sends a text component to the server console and all players connected
     public static void sendTextComponent(ITextComponent component) {
-        ModClass.server.sendMessage(component);
+        ModClass.server.addChatMessage(component);
 
         //Loops over all players to send the message to them
         PlayerList players = ModClass.server.getPlayerList();
-        for (String name : ModClass.server.getOnlinePlayerNames()) {
+        for (EntityPlayerMP player : ModClass.server.getPlayerList().getPlayerList()) {
             try {
-                players.getPlayerByUsername(name).sendMessage(component);
+                player.addChatMessage(component);
             } catch (NullPointerException ignored) {
             }
         }
