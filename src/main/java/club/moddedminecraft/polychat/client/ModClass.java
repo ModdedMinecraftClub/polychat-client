@@ -21,7 +21,7 @@ package club.moddedminecraft.polychat.client;
 
 import club.moddedminecraft.polychat.client.threads.ActivePlayerThread;
 import club.moddedminecraft.polychat.client.threads.ReattachThread;
-import club.moddedminecraft.polychat.networking.io.Message;
+import club.moddedminecraft.polychat.networking.io.AbstractMessage;
 import club.moddedminecraft.polychat.networking.io.MessageBus;
 import club.moddedminecraft.polychat.networking.io.ServerStatusMessage;
 import net.minecraft.server.MinecraftServer;
@@ -38,13 +38,9 @@ import net.minecraftforge.fml.common.event.FMLServerStoppingEvent;
 import net.minecraftforge.fml.common.network.NetworkCheckHandler;
 import net.minecraftforge.fml.relauncher.Side;
 
-import java.io.File;
-import java.io.FileInputStream;
-import java.io.FileOutputStream;
-import java.io.IOException;
+import java.io.*;
 import java.net.Socket;
-import java.util.Map;
-import java.util.Properties;
+import java.util.*;
 
 @Mod(modid = ModClass.MODID, name = ModClass.NAME, version = ModClass.VERSION)
 public class ModClass {
@@ -63,7 +59,7 @@ public class ModClass {
     public static String idJson = null;
 
     //Contains null pointer exceptions from a failed connection to the main server
-    public static void sendMessage(Message message) {
+    public static void sendMessage(AbstractMessage message) {
         try {
             messageBus.sendMessage(message);
         } catch (NullPointerException ignored) {
@@ -189,4 +185,5 @@ public class ModClass {
             }
         }
     }
+
 }
