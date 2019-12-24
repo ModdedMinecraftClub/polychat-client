@@ -49,7 +49,7 @@ public class EventListener {
     }
 
     //This gets messages sent from the main polychat process and handles them
-    public static void handleMessage(Message message) {
+    public static void handleMessage(AbstractMessage message) {
         ITextComponent string = null;
         //Determines the content of the text component
         if (message instanceof BroadcastMessage) {
@@ -66,9 +66,16 @@ public class EventListener {
             string.appendSibling(messageContent);
         } else if (message instanceof ChatMessage) {
             ChatMessage chatMessage = (ChatMessage) message;
-            if (chatMessage.getComponentJson().equals("empty")) {
-                string = new TextComponentString("[Discord] ");
+            String component = chatMessage.getComponentJson();
+            if (component.equals("discord")) {
+                string = new TextComponentString("[Discord]: ");
                 string.getStyle().setColor(TextFormatting.DARK_PURPLE);
+                ITextComponent content = ForgeHooks.newChatWithLinks(chatMessage.getUsername() + " " + chatMessage.getMessage());
+                content.getStyle().setColor(TextFormatting.RESET);
+                string.appendSibling(content);
+            } else if (chatMessage.getComponentJson().equals("web")) {
+                string = new TextComponentString(chatMessage.getUsername());
+                string.getStyle().setColor(TextFormatting.BLUE);
                 ITextComponent content = ForgeHooks.newChatWithLinks(chatMessage.getUsername() + " " + chatMessage.getMessage());
                 content.getStyle().setColor(TextFormatting.RESET);
                 string.appendSibling(content);

@@ -21,7 +21,7 @@ package club.moddedminecraft.polychat.client;
 
 import club.moddedminecraft.polychat.client.threads.ActivePlayerThread;
 import club.moddedminecraft.polychat.client.threads.ReattachThread;
-import club.moddedminecraft.polychat.networking.io.Message;
+import club.moddedminecraft.polychat.networking.io.AbstractMessage;
 import club.moddedminecraft.polychat.networking.io.MessageBus;
 import club.moddedminecraft.polychat.networking.io.ServerStatusMessage;
 import net.minecraft.server.MinecraftServer;
@@ -63,7 +63,7 @@ public class ModClass {
     public static String idJson = null;
 
     //Contains null pointer exceptions from a failed connection to the main server
-    public static void sendMessage(Message message) {
+    public static void sendMessage(AbstractMessage message) {
         try {
             messageBus.sendMessage(message);
         } catch (NullPointerException ignored) {
