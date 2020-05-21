@@ -114,15 +114,19 @@ public class EventListener {
             }
         } else if (message instanceof CommandMessage) {
             // send command output to discord in .5 seconds
-            CommandSender sender = parseCommand((CommandMessage)message);
-            if (sender != null) {
-                new Timer().schedule(new TimerTask() {
-                    @Override
-                    public void run() {
-                        sender.sendOutput();
+            CommandMessage commandMessage = (CommandMessage) message;
+            final CommandSender sender = new CommandSender(commandMessage, ModClass.properties.getProperty("id_color", "15"));
+
+            if (sender.getCommand() != null) {
+                ModClass.server.getCommandManager().executeCommand(sender, sender.getCommand());
+            }
+
+            new Timer().schedule(new TimerTask() {
+                             @Override
+                             public void run() {
+                                    sender.sendOutput();
                     }
                 }, 500);
-            }
         }
 
         if (string != null) sendTextComponent(string);
@@ -168,49 +172,6 @@ public class EventListener {
         Pattern pattern = Pattern.compile("(\\$\\d+)");
         Matcher matcher = pattern.matcher(command);
         return matcher.groupCount();
-    }
-
-    public static CommandSender parseCommand(CommandMessage message) {
-        String serverID = message.getServerID();
-        String name = message.getName();
-        String command = message.getCommand();
-        String channel = message.getChannel();
-
-        ArrayList<String> args = message.getArgs();
-        String override = (String) ModClass.properties.getOrDefault("override_command_" + name, "");
-        if (!override.isEmpty()) {
-            command = override;
-            // get the last instance of every unique $(number)
-            // ie. /ranks set $1 $2 $1 $3 returns $2 $1 $3
-            Pattern pattern = Pattern.compile("(\\$\\d+)(?!.*\\1)");
-            Matcher matcher = pattern.matcher(override);
-
-            while (matcher.find()) {
-                int argCount = calculateParameters(override);
-                if (args.size() < 1) {
-                    System.err.println("Error running command: Server prefix required");
-                    return null;
-                }
-
-                if (args.size() < (argCount-1)) {
-                    System.err.println("Expected at least " + argCount + " parameters, received " + (args.size() - 1));
-                    return null;
-                }
-
-                for (int i = 0; i <= matcher.groupCount(); i++) {
-                    String toBeReplaced = matcher.group(i);
-                    String replaceWith;
-                    int argNum = Integer.parseInt(toBeReplaced.substring(1));
-                    replaceWith = args.get(argNum - 1);
-                    command = command.replace(toBeReplaced, replaceWith);
-                }
-            }
-            command = command.replace("$args", String.join(" ", args));
-        }
-
-        CommandSender sender = new CommandSender(serverID, command, channel);
-        ModClass.server.getCommandManager().executeCommand(sender, command);
-        return sender;
     }
 
 }
