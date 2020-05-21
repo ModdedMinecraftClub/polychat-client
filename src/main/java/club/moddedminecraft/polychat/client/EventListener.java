@@ -29,8 +29,11 @@ import net.minecraftforge.event.ServerChatEvent;
 import net.minecraftforge.fml.common.eventhandler.SubscribeEvent;
 import net.minecraftforge.fml.common.gameevent.PlayerEvent;
 
+import java.util.ArrayList;
 import java.util.Timer;
 import java.util.TimerTask;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
 public class EventListener {
 
@@ -49,7 +52,7 @@ public class EventListener {
     }
 
     //This gets messages sent from the main polychat process and handles them
-    public static void handleMessage(Message message) {
+    public static void handleMessage(AbstractMessage message) {
         ITextComponent string = null;
         //Determines the content of the text component
         if (message instanceof BroadcastMessage) {
@@ -110,18 +113,20 @@ public class EventListener {
                 string.appendSibling(statusString);
             }
         } else if (message instanceof CommandMessage) {
-            String command = ((CommandMessage) message).getCommand();
-            String channel = ((CommandMessage) message).getChannel();
-            String serverID = ((CommandMessage) message).getServerID();
-            CommandSender sender = new CommandSender(serverID, command, channel);
-            ModClass.server.getCommandManager().executeCommand(sender, command);
             // send command output to discord in .5 seconds
+            CommandMessage commandMessage = (CommandMessage) message;
+            final CommandSender sender = new CommandSender(commandMessage, ModClass.properties.getProperty("id_color", "15"));
+
+            if (sender.getCommand() != null) {
+                ModClass.server.getCommandManager().executeCommand(sender, sender.getCommand());
+            }
+
             new Timer().schedule(new TimerTask() {
-                @Override
-                public void run() {
-                    sender.sendOutput();
-                }
-            }, 500);
+                             @Override
+                             public void run() {
+                                    sender.sendOutput();
+                    }
+                }, 500);
         }
 
         if (string != null) sendTextComponent(string);
@@ -162,4 +167,11 @@ public class EventListener {
                 ModClass.idJson, false, false);
         ModClass.sendMessage(logoutMsg);
     }
+
+    public static int calculateParameters(String command) {
+        Pattern pattern = Pattern.compile("(\\$\\d+)");
+        Matcher matcher = pattern.matcher(command);
+        return matcher.groupCount();
+    }
+
 }
