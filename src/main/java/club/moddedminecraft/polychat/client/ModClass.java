@@ -25,8 +25,6 @@ import club.moddedminecraft.polychat.networking.io.AbstractMessage;
 import club.moddedminecraft.polychat.networking.io.MessageBus;
 import club.moddedminecraft.polychat.networking.io.ServerStatusMessage;
 import net.minecraft.server.MinecraftServer;
-import net.minecraft.util.text.ITextComponent;
-import net.minecraft.util.text.TextComponentString;
 import net.minecraft.util.text.TextFormatting;
 import net.minecraftforge.common.MinecraftForge;
 import net.minecraftforge.fml.common.Mod;
@@ -55,8 +53,8 @@ public class ModClass {
     public static MessageBus messageBus = null;
     public static ReattachThread reattachThread;
     public static ActivePlayerThread playerThread;
-    public static TextComponentString serverIdText = null;
-    public static String idJson = null;
+    public static String id = null;
+    public static String idFormatted = null;
 
     //Contains null pointer exceptions from a failed connection to the main server
     public static void sendMessage(AbstractMessage message) {
@@ -130,8 +128,7 @@ public class ModClass {
         } else {
             exitVal = 3;
         }
-        ServerStatusMessage statusMessage = new ServerStatusMessage(properties.getProperty("server_id"),
-                ITextComponent.Serializer.componentToJson(ModClass.serverIdText), exitVal);
+        ServerStatusMessage statusMessage = new ServerStatusMessage(id, idFormatted, exitVal);
         ModClass.sendMessage(statusMessage);
         try {
             //Makes sure message has time to send
@@ -143,18 +140,14 @@ public class ModClass {
 
     //Sets the color to use for the server prefix in chat
     public void handlePrefix() {
-        String idText = properties.getProperty("server_id");
-        if (!(idText.equals("empty"))) {
+        String serverId = properties.getProperty("server_id");
+        if (!(serverId.equals("empty"))) {
             int code = Integer.parseInt(properties.getProperty("id_color"));
-            TextFormatting formatting;
             if ((code < 0) || (code > 15)) {
-                formatting = TextFormatting.fromColorIndex(15);
-            } else {
-                formatting = TextFormatting.fromColorIndex(code);
+                code = 15;
             }
-            serverIdText = new TextComponentString(idText);
-            serverIdText.getStyle().setColor(formatting);
-            idJson = ITextComponent.Serializer.componentToJson(ModClass.serverIdText);
+            id = "[" + serverId + "]";
+            idFormatted = String.format("§%01x[%s]", code, serverId);
         }
     }
 

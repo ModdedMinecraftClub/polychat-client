@@ -29,7 +29,6 @@ import net.minecraftforge.event.ServerChatEvent;
 import net.minecraftforge.fml.common.eventhandler.SubscribeEvent;
 import net.minecraftforge.fml.common.gameevent.PlayerEvent;
 
-import java.util.ArrayList;
 import java.util.Timer;
 import java.util.TimerTask;
 import java.util.regex.Matcher;
@@ -69,14 +68,14 @@ public class EventListener {
             string.appendSibling(messageContent);
         } else if (message instanceof ChatMessage) {
             ChatMessage chatMessage = (ChatMessage) message;
-            if (chatMessage.getComponentJson().equals("empty")) {
+            if (chatMessage.getFormattedMessage().equals("empty")) {
                 string = new TextComponentString("[Discord] ");
                 string.getStyle().setColor(TextFormatting.DARK_PURPLE);
                 ITextComponent content = ForgeHooks.newChatWithLinks(chatMessage.getUsername() + " " + chatMessage.getMessage());
                 content.getStyle().setColor(TextFormatting.RESET);
                 string.appendSibling(content);
             } else {
-                string = ITextComponent.Serializer.fromJsonLenient(chatMessage.getComponentJson());
+                string = new TextComponentString(chatMessage.getFormattedMessage());
             }
         } else if (message instanceof ServerStatusMessage) {
             ServerStatusMessage serverStatus = ((ServerStatusMessage) message);
@@ -95,8 +94,7 @@ public class EventListener {
                     System.err.println("Unrecognized server state " + serverStatus.getState() + " received from " + serverStatus.getServerID());
             }
             if (msgComponent != null) {
-                string = ITextComponent.Serializer.fromJsonLenient(serverStatus.getPrefixJson());
-                msgComponent.getStyle().setColor(TextFormatting.WHITE);
+                string = new TextComponentString(serverStatus.getFormattedPrefix());
                 string.appendSibling(msgComponent);
             }
         } else if (message instanceof PlayerStatusMessage) {
@@ -108,7 +106,7 @@ public class EventListener {
                 } else {
                     statusString = new TextComponentString(" " + playerStatus.getUserName() + " has left the game");
                 }
-                string = ITextComponent.Serializer.fromJsonLenient(playerStatus.getPrefixJson());
+                string = new TextComponentString(playerStatus.getFormattedPrefix());
                 statusString.getStyle().setColor(TextFormatting.WHITE);
                 string.appendSibling(statusString);
             }
@@ -135,24 +133,23 @@ public class EventListener {
     //This gets messages sent on this server and sends them to the main polychat process
     @SubscribeEvent
     public void recieveChatEvent(ServerChatEvent event) {
-        ITextComponent newMessage = ModClass.serverIdText.createCopy();
+        ITextComponent newMessage = new TextComponentString(ModClass.idFormatted);
         ITextComponent space = new TextComponentString(" ");
         space.getStyle().setColor(TextFormatting.RESET);
         space.appendSibling(event.getComponent());
         newMessage.appendSibling(space);
         event.setComponent(newMessage);
-        String unformattedText = event.getComponent().getUnformattedText();
+        String unformattedText = event.getComponent().getUnformattedText().replaceAll("§.", ""); // prune section symbol + format, since apparently text component doesn't care about that
         String nameWithPrefixes = unformattedText.substring(0, unformattedText.lastIndexOf(event.getMessage()));
-        ChatMessage chatMessage = new ChatMessage(nameWithPrefixes, event.getMessage(), ITextComponent.Serializer.componentToJson(event.getComponent()));
+        ChatMessage chatMessage = new ChatMessage(nameWithPrefixes, event.getMessage(), event.getComponent().getFormattedText());
         ModClass.sendMessage(chatMessage);
     }
 
     //This sets the server prefix for this player on this server
     @SubscribeEvent
     public void playerJoin(PlayerEvent.PlayerLoggedInEvent event) {
-        String id = ModClass.properties.getProperty("server_id");
-        PlayerStatusMessage loginMsg = new PlayerStatusMessage(event.player.getName(), id,
-                ModClass.idJson, true, false);
+        PlayerStatusMessage loginMsg = new PlayerStatusMessage(event.player.getName(), ModClass.id,
+                ModClass.idFormatted, true, false);
         ModClass.sendMessage(loginMsg);
     }
 
@@ -162,9 +159,8 @@ public class EventListener {
 
     @SubscribeEvent
     public void playerLeave(PlayerEvent.PlayerLoggedOutEvent event) {
-        String id = ModClass.properties.getProperty("server_id");
-        PlayerStatusMessage logoutMsg = new PlayerStatusMessage(event.player.getName(), id,
-                ModClass.idJson, false, false);
+        PlayerStatusMessage logoutMsg = new PlayerStatusMessage(event.player.getName(), ModClass.id,
+                ModClass.idFormatted, false, false);
         ModClass.sendMessage(logoutMsg);
     }
 
