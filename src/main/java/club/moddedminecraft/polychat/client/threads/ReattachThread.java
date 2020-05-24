@@ -6,7 +6,6 @@ import club.moddedminecraft.polychat.networking.io.MessageBus;
 import club.moddedminecraft.polychat.networking.io.PlayerListMessage;
 import club.moddedminecraft.polychat.networking.io.ServerInfoMessage;
 import club.moddedminecraft.polychat.networking.io.ServerStatusMessage;
-import net.minecraft.util.text.ITextComponent;
 import net.minecraft.util.text.TextComponentString;
 
 import java.io.IOException;
@@ -66,8 +65,7 @@ public class ReattachThread extends HeartbeatThread {
                 ModClass.properties.getProperty("server_address", "DEFAULT_ADDRESS"), ModClass.server.getMaxPlayers());
         ModClass.sendMessage(infoMessage);
         //Reports the server as online and ready to receive players
-        ServerStatusMessage statusMessage = new ServerStatusMessage(ModClass.properties.getProperty("server_id"),
-                ITextComponent.Serializer.componentToJson(ModClass.serverIdText), (short) 1);
+        ServerStatusMessage statusMessage = new ServerStatusMessage(ModClass.id, ModClass.idFormatted, (short) 1);
         ModClass.sendMessage(statusMessage);
     }
 
