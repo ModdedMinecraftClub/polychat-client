@@ -88,7 +88,7 @@ public class ModClass {
         handleConfiguration(event.getModConfigurationDirectory());
 
         reattachThread = new ReattachThread(5000);
-        playerThread = new ActivePlayerThread(30000, properties.getProperty("server_id", "DEFAULT_ID"));
+        playerThread = new ActivePlayerThread(30000, properties.getProperty(id, "DEFAULT_ID"));
 
         //Sets up the config values
         //Establishes the color for the prefix
@@ -146,7 +146,7 @@ public class ModClass {
             if ((code < 0) || (code > 15)) {
                 code = 15;
             }
-            id = "[" + serverId + "]";
+            id = serverId;
             idFormatted = String.format("§%01x[%s]", code, serverId);
         }
     }
