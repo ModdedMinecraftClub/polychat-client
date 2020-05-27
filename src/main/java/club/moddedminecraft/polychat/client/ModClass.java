@@ -88,7 +88,7 @@ public class ModClass {
         handleConfiguration(event.getModConfigurationDirectory());
 
         reattachThread = new ReattachThread(5000);
-        playerThread = new ActivePlayerThread(30000, properties.getProperty(id, "DEFAULT_ID"));
+        playerThread = new ActivePlayerThread(30000, id);
 
         //Sets up the config values
         //Establishes the color for the prefix
