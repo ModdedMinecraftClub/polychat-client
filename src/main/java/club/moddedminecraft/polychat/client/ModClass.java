@@ -147,7 +147,7 @@ public class ModClass {
                 code = 15;
             }
             id = serverId;
-            idFormatted = String.format("§%01x[%s]", code, serverId);
+            idFormatted = String.format("§%01x%s", code, serverId);
         }
     }
 
