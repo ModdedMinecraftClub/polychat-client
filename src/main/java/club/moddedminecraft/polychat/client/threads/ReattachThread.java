@@ -60,9 +60,12 @@ public class ReattachThread extends HeartbeatThread {
 
     public void sendServerOnline() {
         //Reports the server as starting
-        ServerInfoMessage infoMessage = new ServerInfoMessage(ModClass.properties.getProperty(ModClass.id, "DEFAULT_ID"),
+        ServerInfoMessage infoMessage = new ServerInfoMessage(
+                ModClass.properties.getProperty("server_id", "DEFAULT_ID"),
                 ModClass.properties.getProperty("server_name", "DEFAULT_NAME"),
-                ModClass.properties.getProperty("server_address", "DEFAULT_ADDRESS"), ModClass.server.getMaxPlayers());
+                ModClass.properties.getProperty("server_address", "DEFAULT_ADDRESS"),
+                ModClass.server.getMaxPlayers()
+        );
         ModClass.sendMessage(infoMessage);
         //Reports the server as online and ready to receive players
         ServerStatusMessage statusMessage = new ServerStatusMessage(ModClass.id, ModClass.idFormatted, (short) 1);
@@ -74,7 +77,7 @@ public class ReattachThread extends HeartbeatThread {
     public void sendOnlinePlayers() {
         ArrayList<String> playerList = new ArrayList<>();
         Collections.addAll(playerList, ModClass.server.getOnlinePlayerNames());
-        PlayerListMessage message = new PlayerListMessage(ModClass.properties.getProperty(ModClass.id), playerList);
+        PlayerListMessage message = new PlayerListMessage(ModClass.id, playerList);
         ModClass.sendMessage(message);
     }
 }

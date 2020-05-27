@@ -85,14 +85,14 @@ public class ModClass {
     public void preInit(FMLPreInitializationEvent event) {
         //Registers game event listener class
         MinecraftForge.EVENT_BUS.register(new EventListener());
+
+        // setup config
         handleConfiguration(event.getModConfigurationDirectory());
+        handlePrefix();
 
         reattachThread = new ReattachThread(5000);
         playerThread = new ActivePlayerThread(30000, id);
 
-        //Sets up the config values
-        //Establishes the color for the prefix
-        handlePrefix();
         //Registers the shutdown hook
         Runtime.getRuntime().addShutdownHook(new Thread(this::shutdownHook));
     }
