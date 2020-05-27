@@ -44,7 +44,7 @@ import java.util.*;
 public class ModClass {
     public static final String MODID = "polychat";
     public static final String NAME = "Poly Chat Client";
-    public static final String VERSION = "1.2.2";
+    public static final String VERSION = "1.2.3";
     //Used to determine whether the server cleanly shutdown or crashed
     public static boolean shutdownClean = false;
     //Used to determine whether to send a connection lost warning in game
