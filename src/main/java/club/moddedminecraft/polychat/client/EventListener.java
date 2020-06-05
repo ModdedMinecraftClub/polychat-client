@@ -20,14 +20,18 @@
 package club.moddedminecraft.polychat.client;
 
 import club.moddedminecraft.polychat.networking.io.*;
+import net.minecraft.command.CommandSource;
+import net.minecraft.entity.Entity;
 import net.minecraft.server.management.PlayerList;
+import net.minecraft.util.math.Vec2f;
+import net.minecraft.util.math.Vec3d;
 import net.minecraft.util.text.ITextComponent;
-import net.minecraft.util.text.TextComponentString;
+import net.minecraft.util.text.StringTextComponent;
 import net.minecraft.util.text.TextFormatting;
 import net.minecraftforge.common.ForgeHooks;
 import net.minecraftforge.event.ServerChatEvent;
-import net.minecraftforge.fml.common.eventhandler.SubscribeEvent;
-import net.minecraftforge.fml.common.gameevent.PlayerEvent;
+import net.minecraftforge.event.entity.player.PlayerEvent;
+import net.minecraftforge.eventbus.api.SubscribeEvent;
 
 import java.util.Timer;
 import java.util.TimerTask;
@@ -56,45 +60,45 @@ public class EventListener {
         //Determines the content of the text component
         if (message instanceof BroadcastMessage) {
             BroadcastMessage broadcastMessage = ((BroadcastMessage) message);
-            string = new TextComponentString(broadcastMessage.getPrefix());
+            string = new StringTextComponent(broadcastMessage.getPrefix());
 
             TextFormatting formatting = TextFormatting.WHITE;
             int color = broadcastMessage.prefixColor();
             if ((color >= 0) && (color <= 15)) formatting = TextFormatting.fromColorIndex(color);
             string.getStyle().setColor(formatting);
 
-            TextComponentString messageContent = new TextComponentString(" " + broadcastMessage.getMessage());
+            StringTextComponent messageContent = new StringTextComponent(" " + broadcastMessage.getMessage());
             messageContent.getStyle().setColor(TextFormatting.WHITE);
             string.appendSibling(messageContent);
         } else if (message instanceof ChatMessage) {
             ChatMessage chatMessage = (ChatMessage) message;
             if (chatMessage.getFormattedMessage().equals("empty")) {
-                string = new TextComponentString("[Discord] ");
+                string = new StringTextComponent("[Discord] ");
                 string.getStyle().setColor(TextFormatting.DARK_PURPLE);
                 ITextComponent content = ForgeHooks.newChatWithLinks(chatMessage.getUsername() + " " + chatMessage.getMessage());
                 content.getStyle().setColor(TextFormatting.RESET);
                 string.appendSibling(content);
             } else {
-                string = new TextComponentString(chatMessage.getFormattedMessage());
+                string = new StringTextComponent(chatMessage.getFormattedMessage());
             }
         } else if (message instanceof ServerStatusMessage) {
             ServerStatusMessage serverStatus = ((ServerStatusMessage) message);
             ITextComponent msgComponent = null;
             switch (serverStatus.getState()) {
                 case 1:
-                    msgComponent = new TextComponentString(" Server Online");
+                    msgComponent = new StringTextComponent(" Server Online");
                     break;
                 case 2:
-                    msgComponent = new TextComponentString(" Server Offline");
+                    msgComponent = new StringTextComponent(" Server Offline");
                     break;
                 case 3:
-                    msgComponent = new TextComponentString(" Server Crashed");
+                    msgComponent = new StringTextComponent(" Server Crashed");
                     break;
                 default:
                     System.err.println("Unrecognized server state " + serverStatus.getState() + " received from " + serverStatus.getServerID());
             }
             if (msgComponent != null) {
-                string = new TextComponentString(serverStatus.getFormattedPrefix());
+                string = new StringTextComponent(serverStatus.getFormattedPrefix());
                 string.appendSibling(msgComponent);
             }
         } else if (message instanceof PlayerStatusMessage) {
@@ -102,53 +106,61 @@ public class EventListener {
             PlayerStatusMessage playerStatus = ((PlayerStatusMessage) message);
             if (!(playerStatus.getSilent())) {
                 if (playerStatus.getJoined()) {
-                    statusString = new TextComponentString(" " + playerStatus.getUserName() + " has joined the game");
+                    statusString = new StringTextComponent(" " + playerStatus.getUserName() + " has joined the game");
                 } else {
-                    statusString = new TextComponentString(" " + playerStatus.getUserName() + " has left the game");
+                    statusString = new StringTextComponent(" " + playerStatus.getUserName() + " has left the game");
                 }
-                string = new TextComponentString(playerStatus.getFormattedPrefix());
+                string = new StringTextComponent(playerStatus.getFormattedPrefix());
                 statusString.getStyle().setColor(TextFormatting.WHITE);
                 string.appendSibling(statusString);
             }
         } else if (message instanceof CommandMessage) {
             // send command output to discord in .5 seconds
             CommandMessage commandMessage = (CommandMessage) message;
-            final CommandSender sender = new CommandSender(commandMessage, ModClass.properties.getProperty("id_color", "15"));
+
+            final CommandSender sender = new CommandSender(commandMessage, ModClass.properties.getProperty("id_color", "15"), ModClass.server);
 
             if (sender.getCommand() != null) {
-                ModClass.server.getCommandManager().executeCommand(sender, sender.getCommand());
+                ModClass.server.getCommandManager().handleCommand(sender.getSource(), sender.getCommand());
             }
 
             new Timer().schedule(new TimerTask() {
-                             @Override
-                             public void run() {
-                                    sender.sendOutput();
-                    }
-                }, 500);
+                @Override
+                public void run() {
+                    sender.sendOutput();
+                }
+            }, 1000);
         }
 
         if (string != null) sendTextComponent(string);
     }
 
+    public static int calculateParameters(String command) {
+        Pattern pattern = Pattern.compile("(\\$\\d+)");
+        Matcher matcher = pattern.matcher(command);
+        return matcher.groupCount();
+    }
+
     //This gets messages sent on this server and sends them to the main polychat process
     @SubscribeEvent
     public void recieveChatEvent(ServerChatEvent event) {
-        ITextComponent newMessage = new TextComponentString(ModClass.idFormatted);
-        ITextComponent space = new TextComponentString(" ");
+        ITextComponent newMessage = new StringTextComponent(ModClass.idFormatted);
+        ITextComponent space = new StringTextComponent(" ");
         space.getStyle().setColor(TextFormatting.RESET);
         space.appendSibling(event.getComponent());
         newMessage.appendSibling(space);
         event.setComponent(newMessage);
-        String unformattedText = event.getComponent().getUnformattedText().replaceAll("§.", ""); // prune section symbol + format, since apparently text component doesn't care about that
-        String nameWithPrefixes = unformattedText.substring(0, unformattedText.lastIndexOf(event.getMessage()));
-        ChatMessage chatMessage = new ChatMessage(nameWithPrefixes, event.getMessage(), event.getComponent().getFormattedText());
+        // i have no idea why in the name of fuck the unformatted text is just the prefix already but whatever
+        String unformattedText = newMessage.getUnformattedComponentText().replaceAll("§.", ""); // prune section symbol + format, since apparently text component doesn't care about that
+        String fullUserName = unformattedText + " " + event.getUsername() + ": ";
+        ChatMessage chatMessage = new ChatMessage(fullUserName, event.getMessage(), event.getComponent().getFormattedText());
         ModClass.sendMessage(chatMessage);
     }
 
     //This sets the server prefix for this player on this server
     @SubscribeEvent
     public void playerJoin(PlayerEvent.PlayerLoggedInEvent event) {
-        PlayerStatusMessage loginMsg = new PlayerStatusMessage(event.player.getName(), ModClass.id,
+        PlayerStatusMessage loginMsg = new PlayerStatusMessage(event.getPlayer().getName().getUnformattedComponentText(), ModClass.id,
                 ModClass.idFormatted, true, false);
         ModClass.sendMessage(loginMsg);
     }
@@ -159,15 +171,9 @@ public class EventListener {
 
     @SubscribeEvent
     public void playerLeave(PlayerEvent.PlayerLoggedOutEvent event) {
-        PlayerStatusMessage logoutMsg = new PlayerStatusMessage(event.player.getName(), ModClass.id,
+        PlayerStatusMessage logoutMsg = new PlayerStatusMessage(event.getPlayer().getName().getUnformattedComponentText(), ModClass.id,
                 ModClass.idFormatted, false, false);
         ModClass.sendMessage(logoutMsg);
-    }
-
-    public static int calculateParameters(String command) {
-        Pattern pattern = Pattern.compile("(\\$\\d+)");
-        Matcher matcher = pattern.matcher(command);
-        return matcher.groupCount();
     }
 
 }

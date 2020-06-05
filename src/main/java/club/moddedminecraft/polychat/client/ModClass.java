@@ -25,24 +25,29 @@ import club.moddedminecraft.polychat.networking.io.AbstractMessage;
 import club.moddedminecraft.polychat.networking.io.MessageBus;
 import club.moddedminecraft.polychat.networking.io.ServerStatusMessage;
 import net.minecraft.server.MinecraftServer;
-import net.minecraft.util.text.TextFormatting;
 import net.minecraftforge.common.MinecraftForge;
+import net.minecraftforge.eventbus.api.SubscribeEvent;
 import net.minecraftforge.fml.common.Mod;
-import net.minecraftforge.fml.common.Mod.EventHandler;
-import net.minecraftforge.fml.common.event.FMLPreInitializationEvent;
-import net.minecraftforge.fml.common.event.FMLServerStartedEvent;
-import net.minecraftforge.fml.common.event.FMLServerStartingEvent;
-import net.minecraftforge.fml.common.event.FMLServerStoppingEvent;
-import net.minecraftforge.fml.common.network.NetworkCheckHandler;
-import net.minecraftforge.fml.relauncher.Side;
+import net.minecraftforge.fml.event.lifecycle.FMLCommonSetupEvent;
+import net.minecraftforge.fml.event.server.FMLServerStartedEvent;
+import net.minecraftforge.fml.event.server.FMLServerStartingEvent;
+import net.minecraftforge.fml.event.server.FMLServerStoppingEvent;
+import net.minecraftforge.fml.javafmlmod.FMLJavaModLoadingContext;
+import net.minecraftforge.fml.loading.FMLConfig;
+import net.minecraftforge.fml.loading.FMLPaths;
 
-import java.io.*;
+import java.io.File;
+import java.io.FileInputStream;
+import java.io.FileOutputStream;
+import java.io.IOException;
 import java.net.Socket;
-import java.util.*;
+import java.util.Map;
+import java.util.Properties;
+import java.util.Set;
 
-@Mod(modid = ModClass.MODID, name = ModClass.NAME, version = ModClass.VERSION)
+@Mod("polychat-client")
 public class ModClass {
-    public static final String MODID = "polychat";
+    public static final String MODID = "polychat-client";
     public static final String NAME = "Poly Chat Client";
     public static final String VERSION = "1.2.3";
     //Used to determine whether the server cleanly shutdown or crashed
@@ -55,6 +60,12 @@ public class ModClass {
     public static ActivePlayerThread playerThread;
     public static String id = null;
     public static String idFormatted = null;
+
+    public ModClass() {
+        // Register setup methods
+        FMLJavaModLoadingContext.get().getModEventBus().addListener(this::preInit);
+        MinecraftForge.EVENT_BUS.register(this);
+    }
 
     //Contains null pointer exceptions from a failed connection to the main server
     public static void sendMessage(AbstractMessage message) {
@@ -76,33 +87,32 @@ public class ModClass {
     }
 
     //Forces the server to allow clients to join without the mod installed on their client
-    @NetworkCheckHandler
-    public boolean checkClient(Map<String, String> map, Side side) {
-        return true;
-    }
+//    public boolean checkClient(Map<String, String> map, Side side) {
+//        return true;
+//    }
 
-    @EventHandler
-    public void preInit(FMLPreInitializationEvent event) {
+    private void preInit(final FMLCommonSetupEvent event) {
         //Registers game event listener class
         MinecraftForge.EVENT_BUS.register(new EventListener());
 
         // setup config
-        handleConfiguration(event.getModConfigurationDirectory());
+        handleConfiguration(FMLPaths.CONFIGDIR.get().toFile());
         handlePrefix();
 
         reattachThread = new ReattachThread(5000);
         playerThread = new ActivePlayerThread(30000, id);
 
         //Registers the shutdown hook
-        Runtime.getRuntime().addShutdownHook(new Thread(this::shutdownHook));
+        // TODO: doesn't work for some reason?
+//        Runtime.getRuntime().addShutdownHook(new Thread(this::shutdownHook));
     }
 
-    @EventHandler
+    @SubscribeEvent
     public void onServerStarting(FMLServerStartingEvent event) {
         server = event.getServer();
     }
 
-    @EventHandler
+    @SubscribeEvent
     public void onStarted(FMLServerStartedEvent event) {
         //Connects to the main polychat server
         handleClientConnection();
@@ -111,11 +121,11 @@ public class ModClass {
         playerThread.start();
     }
 
-    @EventHandler
+    @SubscribeEvent
     public void onStopped(FMLServerStoppingEvent event) {
         shutdownClean = true;
+        shutdownHook();
     }
-
 
     //Makes sure that the server offline message gets sent
     public void shutdownHook() {

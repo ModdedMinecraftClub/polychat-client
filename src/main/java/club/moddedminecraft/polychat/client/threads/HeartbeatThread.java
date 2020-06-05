@@ -3,8 +3,8 @@ package club.moddedminecraft.polychat.client.threads;
 
 public abstract class HeartbeatThread {
 
-    private int interval;
-    private Thread thread;
+    private final int interval;
+    private final Thread thread;
 
     public HeartbeatThread(int interval) {
         this.interval = interval;
@@ -28,6 +28,7 @@ public abstract class HeartbeatThread {
                 Thread.sleep(this.interval);
             } catch (InterruptedException ignored) {
                 System.out.println("Heartbeat thread " + this.getClass().getSimpleName() + "interrupted, stopping...");
+                return;
             }
         }
     }

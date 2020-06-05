@@ -1,0 +1,25 @@
+modLoader="javafml"
+loaderVersion="[31,)"
+
+issueTrackerURL="https://github.com/moddedminecraftclub/polychat-client"
+[[mods]]
+modId="polychat-client"
+version="${file.jarVersion}"
+displayName="PolyChat Client"
+displayURL="https://github.com/moddedminecraftclub/polychat-client"
+description='''
+Mod which enables connection to PolyChat server.
+'''
+
+[[dependencies.polychat-client]]
+    modId="forge"
+    mandatory=true
+    versionRange="[31,)"
+    ordering="NONE"
+    side="SERVER"
+[[dependencies.polychat-client]]
+    modId="minecraft"
+    mandatory=true
+    versionRange="[1.15.2]"
+    ordering="NONE"
+    side="SERVER"

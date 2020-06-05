@@ -5,13 +5,13 @@ buildscript {
         mavenCentral()
     }
     dependencies {
-        classpath 'net.minecraftforge.gradle:ForgeGradle:3.+'
+        classpath group: 'net.minecraftforge.gradle', name: 'ForgeGradle', version: '3.+', changing: true
     }
 }
 apply plugin: 'net.minecraftforge.gradle'
 
 version = "1.2.3"
-group = "club.moddedminecraft.polychat" // http://maven.apache.org/guides/mini/guide-naming-conventions.html
+group = "club.moddedminecraft.polychat-client" // http://maven.apache.org/guides/mini/guide-naming-conventions.html
 archivesBaseName = "polychat-client"
 
 sourceCompatibility = targetCompatibility = '1.8' // Need this here so eclipse task generates correctly.
@@ -20,7 +20,7 @@ compileJava {
 }
 
 minecraft {
-    mappings channel: 'snapshot', version: '20171003-1.12'
+    mappings channel: 'snapshot', version: '20200514-1.15.1'
 }
 
 repositories {
@@ -29,26 +29,17 @@ repositories {
     }
 }
 
-dependencies {
-    minecraft 'net.minecraftforge:forge:1.12.2-14.23.5.2854'
-    implementation 'club.moddedminecraft:NetworkLibrary'
+configurations {
+    embed
+    compile.extendsFrom(embed)
 }
 
-//processResources {
-//    // this will ensure that this task is redone when the versions change.
-//    inputs.property "version", project.version
-//    inputs.property "mcversion", project.minecraft.version
-//
-//    // replace stuff in mcmod.info, nothing else
-//    from(sourceSets.main.resources.srcDirs) {
-//        include 'mcmod.info'
-//
-//        // replace version and mcversion
-//        expand 'version':project.version, 'mcversion':project.minecraft.version
-//    }
-//
-//    // copy everything else except the mcmod.info
-//    from(sourceSets.main.resources.srcDirs) {
-//        exclude 'mcmod.info'
-//    }
-//}
+dependencies {
+    minecraft 'net.minecraftforge:forge:1.15.2-31.2.0'
+    embed 'club.moddedminecraft:NetworkLibrary'
+}
+
+jar {
+    from configurations.embed.collect { it.isDirectory() ? it : zipTree(it) }
+}
+

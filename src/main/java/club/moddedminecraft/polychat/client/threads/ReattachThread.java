@@ -6,7 +6,7 @@ import club.moddedminecraft.polychat.networking.io.MessageBus;
 import club.moddedminecraft.polychat.networking.io.PlayerListMessage;
 import club.moddedminecraft.polychat.networking.io.ServerInfoMessage;
 import club.moddedminecraft.polychat.networking.io.ServerStatusMessage;
-import net.minecraft.util.text.TextComponentString;
+import net.minecraft.util.text.StringTextComponent;
 
 import java.io.IOException;
 import java.net.Socket;
@@ -30,7 +30,7 @@ public class ReattachThread extends HeartbeatThread {
                 //Tells players ingame that the connection failed
                 if (isConnected) {
                     isConnected = false;
-                    EventListener.sendTextComponent(new TextComponentString("[PolyChat] Lost connection to main server, attempting reconnect..."));
+                    EventListener.sendTextComponent(new StringTextComponent("[PolyChat] Lost connection to main server, attempting reconnect..."));
                 }
 
                 //Stops threads if they are still running
@@ -43,7 +43,7 @@ public class ReattachThread extends HeartbeatThread {
                 //If the socket was reopened, wait 3 seconds to make sure sending online message works
                 if (!ModClass.messageBus.isSocketClosed()) {
                     Thread.sleep(2000);
-                    EventListener.sendTextComponent(new TextComponentString("[PolyChat] Connection re-established!"));
+                    EventListener.sendTextComponent(new StringTextComponent("[PolyChat] Connection re-established!"));
                     sendServerOnline();
                     Thread.sleep(1000);
                     sendOnlinePlayers();

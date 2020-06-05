@@ -2,48 +2,35 @@ package club.moddedminecraft.polychat.client;
 
 import club.moddedminecraft.polychat.networking.io.CommandMessage;
 import club.moddedminecraft.polychat.networking.io.CommandOutputMessage;
-import net.minecraft.command.CommandResultStats;
-import net.minecraft.command.ICommandSender;
+import net.minecraft.command.CommandSource;
+import net.minecraft.command.ICommandSource;
 import net.minecraft.entity.Entity;
 import net.minecraft.server.MinecraftServer;
-import net.minecraft.util.math.BlockPos;
+import net.minecraft.util.math.Vec2f;
 import net.minecraft.util.math.Vec3d;
 import net.minecraft.util.text.ITextComponent;
-import net.minecraft.util.text.TextComponentString;
-import net.minecraft.world.World;
+import net.minecraft.util.text.StringTextComponent;
+import net.minecraft.world.dimension.DimensionType;
+import net.minecraft.world.server.ServerWorld;
 
 import javax.annotation.Nullable;
 import java.util.ArrayList;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
-public class CommandSender implements ICommandSender {
+public class CommandSender implements ICommandSource {
 
     private final CommandMessage commandMessage;
     private final ArrayList<String> output = new ArrayList<>();
     private final String color;
     private boolean parseSuccess;
+    private final CommandSource source;
 
-    public CommandSender(CommandMessage commandMessage, String color) {
+    public CommandSender(CommandMessage commandMessage, String color, MinecraftServer server) {
         this.commandMessage = commandMessage;
         this.color = color;
         parseSuccess = false;
-    }
-
-    @Override
-    public String getName() {
-        return "PolyChat";
-    }
-
-    @Override
-    public ITextComponent getDisplayName() {
-        return new TextComponentString(getName());
-    }
-
-    @Override
-    public void sendMessage(ITextComponent component) {
-        String text = component.getFormattedText();
-        this.output.add(text.replaceAll("§.", ""));
+        this.source = new CommandSource(this, new Vec3d(server.getWorld(DimensionType.OVERWORLD).getSpawnPoint()), Vec2f.ZERO, server.getWorld(DimensionType.OVERWORLD), 4, "PolyChat", new StringTextComponent("PolyChat"), server, (Entity)null);
     }
 
     public void sendOutput() {
@@ -114,40 +101,29 @@ public class CommandSender implements ICommandSender {
         return command;
     }
 
+    public CommandSource getSource() {
+        return source;
+    }
+
     @Override
-    public boolean canUseCommand(int permLevel, String commandName) {
+    public void sendMessage(ITextComponent component) {
+        System.out.println("it really do be sending message doe");
+        String text = component.getFormattedText();
+        this.output.add(text.replaceAll("§.", ""));
+    }
+
+    @Override
+    public boolean shouldReceiveFeedback() {
         return true;
     }
 
     @Override
-    public BlockPos getPosition() {
-        return BlockPos.ORIGIN;
+    public boolean shouldReceiveErrors() {
+        return true;
     }
 
     @Override
-    public Vec3d getPositionVector() {
-        return Vec3d.ZERO;
+    public boolean allowLogging() {
+        return false;
     }
-
-    @Override
-    public World getEntityWorld() {
-        return ModClass.server.getWorld(0);
-    }
-
-    @Nullable
-    @Override
-    public Entity getCommandSenderEntity() {
-        return null;
-    }
-
-    @Override
-    public void setCommandStat(CommandResultStats.Type type, int amount) {
-    }
-
-    @Nullable
-    @Override
-    public MinecraftServer getServer() {
-        return ModClass.server;
-    }
-
 }
